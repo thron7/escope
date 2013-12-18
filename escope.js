@@ -736,14 +736,30 @@
         return this.thisFound;
     };
 
+    /** 
+     * @constant Scope.mangledName
+     */
     Scope.mangledName = '__$escope$__';
 
+    /**
+     * Create a link from the syntax node to this scope object (modifying
+     * the tree).
+     *
+     * Use node[{@link Scope.mangledName}] to access the scope object from the
+     * tree node.
+     * @method Scope#attach
+     */
     Scope.prototype.attach = function attach() {
         if (!this.functionExpressionScope) {
             this.block[Scope.mangledName] = this;
         }
     };
 
+    /**
+     * Remove the link from the syntax node to this scope object (modifying
+     * the tree).
+     * @method Scope#detach
+     */
     Scope.prototype.detach = function detach() {
         if (!this.functionExpressionScope) {
             delete this.block[Scope.mangledName];
@@ -770,7 +786,14 @@
         this.attached = false;
     }
 
-    // Returns appropliate scope for this node
+    /**
+     * Returns the scope appropriate for this node.
+     *
+     * @method ScopeManager#__get
+     * @private
+     * @param {esprima.Tree} node  a tree node
+     * @return {Scope|null}
+     */
     ScopeManager.prototype.__get = function __get(node) {
         var i, iz, scope;
         if (this.attached) {
@@ -789,10 +812,25 @@
         return null;
     };
 
+    /**
+     * Returns the scope appropriate for this node.
+     *
+     * @method ScopeManager#acquire
+     * @param {esprima.Tree} node  a tree node
+     * @return {Scope|null}
+     */
     ScopeManager.prototype.acquire = function acquire(node) {
         return this.__get(node);
     };
 
+    /**
+     * Returns the first non-functionExpression parent scope appropriate for
+     * this node.
+     *
+     * @method ScopeManager#release
+     * @param {esprima.Tree} node  a tree node
+     * @return {Scope|null}
+     */
     ScopeManager.prototype.release = function release(node) {
         var scope = this.__get(node);
         if (scope) {
@@ -807,6 +845,10 @@
         return null;
     };
 
+    /**
+     * Attaches all scopes (see {@link Scope#attach}).
+     * @method ScopeManager#attach
+     */
     ScopeManager.prototype.attach = function attach() {
         var i, iz;
         for (i = 0, iz = this.scopes.length; i < iz; ++i) {
@@ -815,6 +857,10 @@
         this.attached = true;
     };
 
+    /**
+     * Detaches all scopes (see {@link Scope#detach}).
+     * @method ScopeManager#detach
+     */
     ScopeManager.prototype.detach = function detach() {
         var i, iz;
         for (i = 0, iz = this.scopes.length; i < iz; ++i) {
@@ -823,10 +869,24 @@
         this.attached = false;
     };
 
+    /**
+     * Whether this node introduces a new scope or pseudo-scope.
+     *
+     * @method Scope.isScopeRequired
+     * @param {esprima.Tree} node  a tree node
+     * @return {boolean}
+     */
     Scope.isScopeRequired = function isScopeRequired(node) {
         return Scope.isVariableScopeRequired(node) || node.type === Syntax.WithStatement || node.type === Syntax.CatchClause;
     };
 
+    /**
+     * Whether this node introduces a new scope (global or lexical).
+     *
+     * @method Scope.isVariableScopeRequired
+     * @param {esprima.Tree} node  a tree node
+     * @return {boolean}
+     */
     Scope.isVariableScopeRequired = function isVariableScopeRequired(node) {
         return node.type === Syntax.Program || node.type === Syntax.FunctionExpression || node.type === Syntax.FunctionDeclaration;
     };
